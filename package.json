@@ -1,0 +1,27 @@
+{
+  "name": "native-browser-deps-linux",
+  "version": "0.0.1",
+  "description": "Native browser dependencies for Node.js",
+  "main": "index.js",
+  "directories": {
+    "lib": "lib"
+  },
+  "scripts": {
+    "postinstall": "node postinstall.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/modulesio/node-native-browser-deps-linux.git"
+  },
+  "author": "Avaer Kazmer <a@modules.io>",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/modulesio/node-native-browser-deps-linux/issues"
+  },
+  "homepage": "https://github.com/modulesio/node-native-browser-deps-linux#readme",
+  "dependencies": {
+    "rimraf": "^2.6.2",
+    "unzipper": "^0.9.4"
+  }
+}
