@@ -1,19 +1,20 @@
 const path = require('path');
 const fs = require('fs');
 const os = require('os');
+const child_process = require('child_process');
 const unzipper = require('unzipper');
 const rimraf = require('rimraf');
 
-const splitFiles = ['lib4.zip'];
+const splitFiles = ['lib4.xz'];
 
-['lib.zip', 'lib2.zip', 'lib3.zip', 'lib4.zip', 'lib5.zip'].map(lib => {
+['lib4.xz'].map(lib => {
   const _unpack = () => {
-    const rs = fs.createReadStream(path.join(__dirname, lib));
-    rs.on('open', () => {
-      const ws = rs.pipe(unzipper.Extract({
-        path: __dirname,
-      }));
-      ws.on('close', () => {
+    console.log('try spawn', 'tar', ['-Jxf', path.join(__dirname, lib)]);
+    const cp = child_process.spawn('tar', ['-xJf', path.join(__dirname, lib)], {
+      stdio: 'inherit',
+    });
+    cp.on('exit', code => {
+      if (code === 0) {
         rimraf(path.join(__dirname, lib), err => {
           if (err) {
             throw err;
@@ -81,13 +82,8 @@ const splitFiles = ['lib4.zip'];
           }
           default: throw new Error('unknown platform: ' + platform);
         }
-      });
-    });
-    rs.on('error', err => {
-      if (err.code === 'ENOENT') {
-        // process.exit(0);
       } else {
-        throw err;
+        throw new Error(`invalid status code ${code}`);
       }
     });
   };
