@@ -1,6 +1,6 @@
 {
   "name": "native-browser-deps-linux",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Native browser dependencies for Node.js",
   "main": "index.js",
   "directories": {
