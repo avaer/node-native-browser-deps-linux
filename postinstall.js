@@ -9,7 +9,6 @@ const splitFiles = ['lib4.xz'];
 
 ['lib4.xz'].map(lib => {
   const _unpack = () => {
-    console.log('try spawn', 'tar', ['-Jxf', path.join(__dirname, lib)]);
     const cp = child_process.spawn('tar', ['-xJf', path.join(__dirname, lib)], {
       stdio: 'inherit',
     });
