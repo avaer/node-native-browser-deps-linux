@@ -31,7 +31,7 @@ const splitFiles = ['lib4.xz'];
         switch (platform) {
           case 'win32': {
             ['macos', 'linux', 'android', 'ios', 'arm64', 'magicleap'].forEach(p => {
-              rimraf(path.join(__dirname, lib.replace(/\.zip$/, ''), p), err => {
+              rimraf(path.join(__dirname, lib.replace(/\.xz$/, ''), p), err => {
                if (err) {
                   throw err;
                 }
@@ -41,7 +41,7 @@ const splitFiles = ['lib4.xz'];
           }
           case 'darwin': {
             ['windows', 'linux', 'android', 'ios', 'arm64', 'magicleap'].forEach(p => {
-              rimraf(path.join(__dirname, lib.replace(/\.zip$/, ''), p), err => {
+              rimraf(path.join(__dirname, lib.replace(/\.xz$/, ''), p), err => {
                 if (err) {
                   throw err;
                 }
@@ -51,7 +51,7 @@ const splitFiles = ['lib4.xz'];
           }
           case 'linux': {
             ['windows', 'macos', 'android', 'ios', 'arm64', 'magicleap'].forEach(p => {
-              rimraf(path.join(__dirname, lib.replace(/\.zip$/, ''), p), err => {
+              rimraf(path.join(__dirname, lib.replace(/\.xz$/, ''), p), err => {
                 if (err) {
                   throw err;
                 }
@@ -61,7 +61,7 @@ const splitFiles = ['lib4.xz'];
           }
           case 'android': {
             ['windows', 'macos', 'linux', 'android', 'ios', 'magicleap'].forEach(p => {
-              rimraf(path.join(__dirname, lib.replace(/\.zip$/, ''), p), err => {
+              rimraf(path.join(__dirname, lib.replace(/\.xz$/, ''), p), err => {
                 if (err) {
                   throw err;
                 }
@@ -71,7 +71,7 @@ const splitFiles = ['lib4.xz'];
           }
           case 'lumin': {
             ['windows', 'macos', 'linux', 'android', 'ios', 'arm64'].forEach(p => {
-              rimraf(path.join(__dirname, lib.replace(/\.zip$/, ''), p), err => {
+              rimraf(path.join(__dirname, lib.replace(/\.xz$/, ''), p), err => {
                 if (err) {
                   throw err;
                 }
