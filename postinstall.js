@@ -5,7 +5,15 @@ const child_process = require('child_process');
 const unzipper = require('unzipper');
 const rimraf = require('rimraf');
 
-const splitFiles = ['lib4.xz'];
+const platform = (() => {
+  if (process.env['LUMIN'] !== undefined) {
+    return 'lumin';
+  } else if (process.env['ANDROID'] !== undefined) {
+    return 'android';
+  } else {
+    return os.platform();
+  }
+})();
 
 ['lib4.xz'].map(lib => {
   const _unpack = () => {
@@ -19,15 +27,6 @@ const splitFiles = ['lib4.xz'];
             throw err;
           }
         });
-        const platform = (() => {
-          if (process.env['LUMIN'] !== undefined) {
-            return 'lumin';
-          } else if (process.env['ANDROID'] !== undefined) {
-            return 'android';
-          } else {
-            return os.platform();
-          }
-        })();
         switch (platform) {
           case 'win32': {
             ['macos', 'linux', 'android', 'ios', 'arm64', 'magicleap'].forEach(p => {
@@ -86,14 +85,22 @@ const splitFiles = ['lib4.xz'];
       }
     });
   };
-
-  if (splitFiles.includes(lib)) {
+  const _getLibFiles = cb => {
     fs.readdir(__dirname, (err, files) => {
       if (!err) {
         files = files
           .filter(f => f.startsWith(lib))
           .sort();
+        cb(null, files);
+      } else {
+        cb(err);
+      }
+    });
+  };
 
+  if (platform === 'linux') {
+    _getLibFiles((err, files) => {
+      if (!err) {
         const libPath = path.join(__dirname, lib);
         const _recurse = (i = 0) => {
           if (i < files.length) {
@@ -126,7 +133,26 @@ const splitFiles = ['lib4.xz'];
       }
     });
   } else {
-    _unpack();
+    _getLibFiles((err, files) => {
+      if (!err) {
+        const _recurse = (i = 0) => {
+          if (i < files.length) {
+            const file = files[i];
+            const filePath = path.join(__dirname, file);
+            rimraf(filePath, err => {
+              if (err) {
+                throw err;
+              }
+            });
+
+            _recurse(i + 1);
+          }
+        };
+        _recurse();
+      } else {
+        throw err;
+      }
+    });
   }
 });
 
