@@ -1,158 +1,68 @@
+const stream = require('stream');
 const path = require('path');
 const fs = require('fs');
-const os = require('os');
 const child_process = require('child_process');
 const unzipper = require('unzipper');
 const rimraf = require('rimraf');
 
-const platform = (() => {
-  if (process.env['LUMIN'] !== undefined) {
-    return 'lumin';
-  } else if (process.env['ANDROID'] !== undefined) {
-    return 'android';
-  } else {
-    return os.platform();
-  }
-})();
+const lib = 'lib4.zip';
+const _getLibFiles = cb => {
+  fs.readdir(__dirname, (err, files) => {
+    if (!err) {
+      files = files
+        .filter(f => f.startsWith(lib))
+        .sort()
+        .map(f => path.join(__dirname, f));
+      cb(null, files);
+    } else {
+      cb(err);
+    }
+  });
+};
+const _getLibsStream = cb => {
+  _getLibFiles((err, files) => {
+    if (!err) {
+      const s = new stream.PassThrough();
+      s.files = files;
+      const _recurse = (i = 0) => {
+        if (i < files.length) {
+          const file = files[i];
+          const s2 = fs.createReadStream(file);
+          s2.pipe(s, {end: false});
+          s2.on('end', () => {
+            _recurse(i + 1);
+          });
+          s2.on('error', err => {
+            throw err;
+          });
+        } else {
+          s.end();
+        }
+      };
+      _recurse();
+      cb(null, s);
+    } else {
+      cb(err);
+    }
+  });
+};
 
-['lib4.xz'].map(lib => {
-  const _unpack = () => {
-    const cp = child_process.spawn('tar', ['-xJf', path.join(__dirname, lib)], {
-      stdio: 'inherit',
-    });
-    cp.on('exit', code => {
-      if (code === 0) {
-        rimraf(path.join(__dirname, lib), err => {
+_getLibsStream((err, rs) => {
+  if (!err) {
+    const ws = rs.pipe(unzipper.Extract({
+      path: __dirname,
+    }));
+    ws.on('close', () => {
+      for (let i = 0; i < rs.files.length; i++) {
+        /* rimraf(rs.files[i], err => {
           if (err) {
             throw err;
           }
-        });
-        switch (platform) {
-          case 'win32': {
-            ['macos', 'linux', 'android', 'ios', 'arm64', 'magicleap'].forEach(p => {
-              rimraf(path.join(__dirname, lib.replace(/\.xz$/, ''), p), err => {
-               if (err) {
-                  throw err;
-                }
-             });
-            });
-            break;
-          }
-          case 'darwin': {
-            ['windows', 'linux', 'android', 'ios', 'arm64', 'magicleap'].forEach(p => {
-              rimraf(path.join(__dirname, lib.replace(/\.xz$/, ''), p), err => {
-                if (err) {
-                  throw err;
-                }
-              });
-            });
-            break;
-          }
-          case 'linux': {
-            ['windows', 'macos', 'android', 'ios', 'arm64', 'magicleap'].forEach(p => {
-              rimraf(path.join(__dirname, lib.replace(/\.xz$/, ''), p), err => {
-                if (err) {
-                  throw err;
-                }
-              });
-            });
-            break;
-          }
-          case 'android': {
-            ['windows', 'macos', 'linux', 'android', 'ios', 'magicleap'].forEach(p => {
-              rimraf(path.join(__dirname, lib.replace(/\.xz$/, ''), p), err => {
-                if (err) {
-                  throw err;
-                }
-              });
-            });
-            break;
-          }
-          case 'lumin': {
-            ['windows', 'macos', 'linux', 'android', 'ios', 'arm64'].forEach(p => {
-              rimraf(path.join(__dirname, lib.replace(/\.xz$/, ''), p), err => {
-                if (err) {
-                  throw err;
-                }
-              });
-            });
-            break;
-          }
-          default: throw new Error('unknown platform: ' + platform);
-        }
-      } else {
-        throw new Error(`invalid status code ${code}`);
-      }
-    });
-  };
-  const _getLibFiles = cb => {
-    fs.readdir(__dirname, (err, files) => {
-      if (!err) {
-        files = files
-          .filter(f => f.startsWith(lib))
-          .sort();
-        cb(null, files);
-      } else {
-        cb(err);
-      }
-    });
-  };
-
-  if (platform === 'linux') {
-    _getLibFiles((err, files) => {
-      if (!err) {
-        const libPath = path.join(__dirname, lib);
-        const _recurse = (i = 0) => {
-          if (i < files.length) {
-            const file = files[i];
-            const filePath = path.join(__dirname, file);
-            const rs = fs.createReadStream(filePath);
-            const ws = fs.createWriteStream(libPath, {
-              flags: (i === 0) ? 'w' : 'a',
-            });
-            rs.pipe(ws);
-            ws.on('finish', () => {
-              rimraf(filePath, err => {
-                if (err) {
-                  throw err;
-                }
-              });
-
-              _recurse(i + 1);
-            });
-            ws.on('error', err => {
-              throw err;
-            });
-          } else {
-            _unpack();
-          }
-        };
-        _recurse();
-      } else {
-        throw err;
+        }); */
       }
     });
   } else {
-    _getLibFiles((err, files) => {
-      if (!err) {
-        const _recurse = (i = 0) => {
-          if (i < files.length) {
-            const file = files[i];
-            const filePath = path.join(__dirname, file);
-            rimraf(filePath, err => {
-              if (err) {
-                throw err;
-              }
-            });
-
-            _recurse(i + 1);
-          }
-        };
-        _recurse();
-      } else {
-        throw err;
-      }
-    });
+    throw err;
   }
 });
 
