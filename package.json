@@ -22,6 +22,6 @@
   "homepage": "https://github.com/modulesio/node-native-browser-deps-linux#readme",
   "dependencies": {
     "rimraf": "^2.6.2",
-    "unzipper": "^0.9.4"
+    "unbr": "0.0.2"
   }
 }

@@ -2,69 +2,26 @@ const stream = require('stream');
 const path = require('path');
 const fs = require('fs');
 const child_process = require('child_process');
-const unzipper = require('unzipper');
+const unbr = require('unbr');
 const rimraf = require('rimraf');
 
-const lib = 'lib4.zip';
-const _getLibFiles = cb => {
-  fs.readdir(__dirname, (err, files) => {
-    if (!err) {
-      files = files
-        .filter(f => f.startsWith(lib))
-        .sort()
-        .map(f => path.join(__dirname, f));
-      cb(null, files);
-    } else {
-      cb(err);
-    }
-  });
-};
-const _getLibsStream = cb => {
-  _getLibFiles((err, files) => {
-    if (!err) {
-      const s = new stream.PassThrough();
-      s.files = files;
-      const _recurse = (i = 0) => {
-        if (i < files.length) {
-          const file = files[i];
-          const s2 = fs.createReadStream(file);
-          s2.pipe(s, {end: false});
-          s2.on('end', () => {
-            _recurse(i + 1);
-          });
-          s2.on('error', err => {
-            throw err;
-          });
-        } else {
-          s.end();
-        }
-      };
-      _recurse();
-      cb(null, s);
-    } else {
-      cb(err);
-    }
-  });
-};
-
-_getLibsStream((err, rs) => {
-  if (!err) {
-    const ws = rs.pipe(unzipper.Extract({
-      path: __dirname,
-    }));
-    ws.on('close', () => {
-      for (let i = 0; i < rs.files.length; i++) {
-        /* rimraf(rs.files[i], err => {
-          if (err) {
-            throw err;
-          }
-        }); */
+const lib = path.join(__dirname, 'lib4.tar.br');
+const libFiles = ['lib4.tar.br01', 'lib4.tar.br02'].map(f => path.join(__dirname, f));
+const _cleanup = () => {
+  const files = libFiles.concat([lib]);
+  for (let i = 0; i < files.length; i++) {
+    rimraf(files[i], err => {
+      if (err) {
+        throw err;
       }
     });
-  } else {
-    throw err;
   }
+};
+unbr(libFiles, lib);
+child_process.execFileSync('tar', ['-xf', lib], {
+  cwd: __dirname,
 });
+_cleanup();
 
 process.on('uncaughtException', err => {
   console.warn(err.stack);
