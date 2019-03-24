@@ -28,9 +28,15 @@ const _cleanup = () => {
   }
 };
 if (platform === 'linux') {
-  unbr(libFiles, lib);
-  child_process.execFileSync('tar', ['-xf', lib], {
-    cwd: __dirname,
-  });
+  try {
+    unbr(libFiles, lib);
+    child_process.execFileSync('tar', ['-xf', lib], {
+      cwd: __dirname,
+    });
+  } catch (err) {
+    if (err.code !== 'ENOENT') {
+      throw err;
+    }
+  }
 }
 _cleanup();
